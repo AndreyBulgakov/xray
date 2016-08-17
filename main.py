@@ -7,6 +7,7 @@ from utils.preprocessing import crop_lungs, Cropper
 from utils.preprocessing import create_dataset, load_dataset
 from models import alexnet, googlenet, inceptionresnet
 from utils.utils import get_resized_image
+
 # data_dir =  "01-Apr-2015/"
 # file_list = os.listdir(data_dir)
 # image_dir = "images/"
@@ -25,7 +26,14 @@ from utils.utils import get_resized_image
 
 image_size = 1024
 data_dir = 'data/'
-create_dataset(image_size, data_dir)
+# create_dataset(image_size, data_dir)
 X, Y, X_test, Y_test = load_dataset(data_dir)
-network = alexnet.create_alexnet(image_size)
-alexnet.train_alexnet(network, X, Y, X_test, Y_test)
+# network = alexnet.create_alexnet(image_size)
+# alexnet.train_alexnet(network, X, Y, X_test, Y_test)
+
+network = inceptionresnet.create_inception_resnet_v2(image_size)
+inceptionresnet.train_resnet(network, X, Y, X_test, Y_test,
+                             checkpoint_file='checkpoints/inception_resnet_flug.ckpt-989')
+
+# inceptionresnet.load_train_resnet(network, X, Y, X_test, Y_test)
+# inceptionresnet.train_resnet(network, X, Y, X_test, Y_test)

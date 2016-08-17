@@ -92,6 +92,7 @@ def crop_lungs(image, cropper):
     y2 = res_y[-1]
 
     image = image[x1:x2, y1:y2]
+
     # plt.imsave('images/test.png', image, cmap='Greys')
     # image = orig[x1:x2, y1:y2]
     # plt.imsave('images/test2.png', image, cmap='Greys')

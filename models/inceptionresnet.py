@@ -201,10 +201,24 @@ def create_inception_resnet_v2(input_size):
 
     return network
 
-def train_resnet(network, X, Y, X_test, Y_test):
+
+def train_resnet(network, X, Y, X_test, Y_test, checkpoint_file=None):
     # Training
     model = tflearn.DNN(network, checkpoint_path='checkpoints/inception_resnet_flug.ckpt',
                         max_checkpoints=1, tensorboard_verbose=2, tensorboard_dir='tensorboard_log/')
+    if checkpoint_file is not None:
+        model.load(checkpoint_file)
+
+    model.fit(X, Y, n_epoch=1000, validation_set=(X_test, Y_test), shuffle=True,
+              show_metric=True, batch_size=1, snapshot_step=80,
+              snapshot_epoch=True, run_id='inception_resnet_flug')
+
+
+def load_train_resnet(network, X, Y, X_test, Y_test):
+    # Training
+    model = tflearn.DNN(network, checkpoint_path='checkpoints/inception_resnet_flug.ckpt',
+                        max_checkpoints=1, tensorboard_verbose=2, tensorboard_dir='tensorboard_log/')
+    model.load('checkpoints/inception_resnet_flug.ckpt-588')
     model.fit(X, Y, n_epoch=1000, validation_set=(X_test, Y_test), shuffle=True,
               show_metric=True, batch_size=1, snapshot_step=80,
               snapshot_epoch=True, run_id='inception_resnet_flug')
