@@ -10,7 +10,7 @@ import utils
 import matplotlib.pyplot as plt
 from models.cropnet import create_cascade_net
 import h5py
-
+import random
 
 class Cropper(object):
     def __init__(self):
@@ -108,6 +108,7 @@ def collect_lungs(dir, image_size, cropper, patsize=-1, nonpatsize=-1):
     nonpat_list_size = len(nonpat_list)
     nonpat_list.sort()
 
+    coef = 5
     # Create cropper
     # cropper = Cropper()
 
@@ -118,30 +119,58 @@ def collect_lungs(dir, image_size, cropper, patsize=-1, nonpatsize=-1):
         # print '[WARNING] Count of nonpatalogy is lower then you want or nonpatsize == -1'
         nonpatsize = nonpat_list_size
 
-    batch_size = patsize + nonpatsize
+    batch_size = (patsize + nonpatsize) * coef
 
     batch = np.ndarray(shape=(batch_size, image_size, image_size, 1), dtype='float32')
     labels = np.ndarray(shape=(batch_size, 2), dtype='int32')
-    for i in range(patsize):
+    for i in range(0, patsize, coef):
         file_name = pat_list[i]
         image = dicom.read_file(dir + 'pat/' + file_name).pixel_array
         image = crop_lungs(image, cropper)
         image = resize(image, (image_size, image_size))
+
+        rotated_right = skimage.transform.rotate(image, angle=(random.uniform(10, 25) + 0.0))
+        rotated_right_resized = skimage.transform.rotate(image, angle=(random.uniform(10, 25) + 0.0), resize=True)
+        rotated_left = skimage.transform.rotate(image, angle=-(random.uniform(10, 25) + 0.0))
+        rotated_left_resized = skimage.transform.rotate(image, angle=-(random.uniform(10, 25) + 0.0), resize=True)
+
         batch[i, :, :, 0] = image
+        batch[i + 1, :, :, 0] = resize(rotated_right, (image_size, image_size))
+        batch[i + 2, :, :, 0] = resize(rotated_right_resized, (image_size, image_size))
+        batch[i + 3, :, :, 0] = resize(rotated_left, (image_size, image_size))
+        batch[i + 4, :, :, 0] = resize(rotated_left_resized, (image_size, image_size))
         # batch[i, :, :, 0] = scm.imresize(dicom.read_file(dir + 'pat/' +file_name).pixel_array, [image_size, image_size]) \
         #                     / 255.0
         # batch[i, :, :, 0] = dicom.read_file(dir + 'pat/' +file_name).pixel_array / 255.0
         labels[i, :] = [1, 0]
-    for i in range(nonpatsize):
+        labels[i + 1, :] = [1, 0]
+        labels[i + 2, :] = [1, 0]
+        labels[i + 3, :] = [1, 0]
+        labels[i + 4, :] = [1, 0]
+    for i in range(0, nonpatsize, coef):
         file_name = nonpat_list[i]
         image = dicom.read_file(dir + 'nonpat/' + file_name).pixel_array
         image = crop_lungs(image, cropper)
         image = resize(image, (image_size, image_size))
+
+        rotated_right = skimage.transform.rotate(image, angle=(random.uniform(10, 25) + 0.0))
+        rotated_right_resized = skimage.transform.rotate(image, angle=(random.uniform(10, 25) + 0.0), resize=True)
+        rotated_left = skimage.transform.rotate(image, angle=-(random.uniform(10, 25) + 0.0))
+        rotated_left_resized = skimage.transform.rotate(image, angle=-(random.uniform(10, 25) + 0.0), resize=True)
+
         batch[i + patsize, :, :, 0] = image
+        batch[i + patsize + 1, :, :, 0] = resize(rotated_right, (image_size, image_size))
+        batch[i + patsize + 2, :, :, 0] = resize(rotated_right_resized, (image_size, image_size))
+        batch[i + patsize + 3, :, :, 0] = resize(rotated_left, (image_size, image_size))
+        batch[i + patsize + 4, :, :, 0] = resize(rotated_left_resized, (image_size, image_size))
         # batch[i+patsize, :, :, 0] = scm.imresize(dicom.read_file(dir + 'nonpat/' +file_name).pixel_array, [image_size, image_size]) \
         #                             / 255.0
         # batch[i+patsize, :, :, 0] = dicom.read_file(dir + 'nonpat/'+ file_name).pixel_array / 255.0
         labels[i + patsize, :] = [0, 1]
+        labels[i + patsize + 1, :] = [0, 1]
+        labels[i + patsize + 2, :] = [0, 1]
+        labels[i + patsize + 3, :] = [0, 1]
+        labels[i + patsize + 4, :] = [0, 1]
     return batch, labels
 
 
